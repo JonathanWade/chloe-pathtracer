@@ -31,6 +31,7 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option)
     return std::find(begin, end, option) != end;
 }
 
+// This apps specifc command line processing
 void processCommandLine(int argc, char* argv[])
 {
 	// Output image width
@@ -44,6 +45,7 @@ void processCommandLine(int argc, char* argv[])
 		}
 	}
 
+    // Output image height
 	char* clHeight = getCmdOption(argv, argv + argc, "-h");
 	if(clHeight != nullptr) {
 		int tmpHeight = std::atoi(clHeight);
@@ -55,7 +57,7 @@ void processCommandLine(int argc, char* argv[])
 	}
 }
 
-// Main //
+// Main ////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
     processCommandLine(argc, argv);

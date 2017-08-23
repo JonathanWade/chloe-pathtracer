@@ -1,5 +1,7 @@
 # Created by https://www.gitignore.io/api/c++
 
+pathtracer
+
 ### C++ ###
 # Prerequisites
 *.d
