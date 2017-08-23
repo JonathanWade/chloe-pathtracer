@@ -1,1 +1,1 @@
-A path tracer made over lunch meetings. It's only purpose is learning.
+A path tracer made over lunch meetings. Made simply for the fun of learning.

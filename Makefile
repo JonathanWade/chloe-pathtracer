@@ -1,5 +1,5 @@
 #Preprocessor
-CPPFLAGS += -I.
+CPPFLAGS += -I. -Iincludes
 
 #C++ compiler flags
 CXXFLAGS += -g -Wall -Wextra -std=c++11
@@ -7,8 +7,8 @@ CXXFLAGS += -g -Wall -Wextra -std=c++11
 #All the things our executable depends on
 OBJS = main.o
 
-pathtracer: $(OBJS) 
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ 
+pathtracer: $(OBJS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^
 
 clean:
 	rm -f $(OBJS) pathtracer
