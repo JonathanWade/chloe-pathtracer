@@ -1,5 +1,9 @@
 // Main entry point for our simple path tracer
 
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
@@ -62,6 +66,34 @@ int main(int argc, char* argv[])
 {
     processCommandLine(argc, argv);
     std::cout << "Output image size: " << imageWidth << "x" << imageHeight << std::endl;
+
+    uint8_t* outputData = new uint8_t[imageWidth * imageHeight * 3];
+
+    for (int j = 0; j < imageHeight; j++) {
+        for (int i = 0; i < imageWidth; i++) {
+            float r = float(i) / float(imageWidth);
+            float g = float(j) / float(imageHeight);
+            float b = 0.2;
+            int index = (j * imageWidth * 3) + (i * 3);
+            outputData[index] = uint8_t(r*255.99);
+            outputData[index + 1] = uint8_t(g*255.99);
+            outputData[index + 2] = uint8_t(b*255.99);
+        }
+    }
+
+    std::cout << "Writing image to disk" << std::endl;
+    int saveImageResult = stbi_write_png(
+                "outputImage.png",
+                imageWidth,
+                imageHeight,
+                3,                  // RGB = 3 bytes
+                outputData,
+                imageWidth * 3 );   // Image stride in bytes
+
+
+    if(!saveImageResult) {
+        std::cout << "Error writing image file to disk" << std::endl;
+    }
 
     return 0;
 }
