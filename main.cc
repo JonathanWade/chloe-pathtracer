@@ -1,8 +1,8 @@
 // Main entry point for our simple path tracer
-
-
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+
+#include "vec3.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -11,7 +11,6 @@
 // Globals //
 int imageWidth = 800;
 int imageHeight = 600;
-
 
 ////////////////////////////////////////////////////////////////////////
 // Some command line parsing utilities lifted from Stack Overflow
