@@ -60,15 +60,22 @@ void processCommandLine(int argc, char* argv[])
 	}
 }
 
-static float minimum = 1000.0f;
-static float maximum = -1000.0f;
+bool HitSphere(const vec3& center, float radius, const ray& r) {
+    vec3 oc = r.Origin() - center;
+    float a = dot(r.Direction(), r.Direction());
+    float b = 2.0f * dot(oc, r.Direction());
+    float c = dot(oc, oc) - radius * radius;
+    float discriminant = b*b - 4*a*c;
+    return discriminant > 0;
+}
 
-// Ray (temporary?)
+// Ray 
 vec3 color(const ray& r) {
+    if (HitSphere(vec3(0,0,-1), 0.5, r)) {
+        return vec3(1.0f, 0.0f, 0.0f);
+    }
     vec3 unit = UnitVector(r.Direction());
     float t = 0.5f*(unit.y() + 1.0f);
-    if (t < minimum) { minimum = t; }
-    if (t > maximum) { maximum = t; }
     return (t)*vec3(1.0f, 1.0f, 1.0f) + (1.0f-t)*vec3(0.5f, 0.7f, 1.0f);
 }
 
@@ -80,9 +87,9 @@ int main(int argc, char* argv[])
 
     uint8_t* outputData = new uint8_t[imageWidth * imageHeight * 3];
 
-    vec3 lowerLeft(-2.0, -1.0, -1.0);
+    vec3 lowerLeft(-2.0, -1.5, -1.0);
     vec3 horizontal(4.0, 0.0, 0.0);
-    vec3 vertical(0.0, 2.0, 0.0);
+    vec3 vertical(0.0, 3.0, 0.0);
     vec3 origin(0.0, 0.0, 0.0);
 
     for (int j = 0; j < imageHeight; j++) {
@@ -99,7 +106,6 @@ int main(int argc, char* argv[])
             outputData[index + 2] = uint8_t(col.b()*255.99);
         }
     }
-    std::cout << minimum << ", " << maximum << std::endl;
 
 
     std::cout << "Writing image to disk" << std::endl;
