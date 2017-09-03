@@ -83,7 +83,7 @@ vec3 color(const ray& r) {
 
     vec3 unit = UnitVector(r.Direction());
     t = 0.5f*(unit.y() + 1.0f);
-    return (t)*vec3(1.0f, 1.0f, 1.0f) + (1.0f-t)*vec3(0.5f, 0.7f, 1.0f);
+    return (1.0f-t)*vec3(1.0f, 1.0f, 1.0f) + (t)*vec3(0.5f, 0.7f, 1.0f);
 }
 
 // Main ////////////////////////////////////////////////////////////////
@@ -94,20 +94,23 @@ int main(int argc, char* argv[])
 
     uint8_t* outputData = new uint8_t[imageWidth * imageHeight * 3];
 
-    vec3 lowerLeft(-2.0, -1.5, -1.0);
+    vec3 topLeft(-2.0, 1.5, -1.0);
     vec3 horizontal(4.0, 0.0, 0.0);
-    vec3 vertical(0.0, 3.0, 0.0);
+    vec3 vertical(0.0, -3.0, 0.0);
     vec3 origin(0.0, 0.0, 0.0);
+
+    int maxIndex = (imageHeight) * imageWidth;
 
     for (int j = 0; j < imageHeight; j++) {
         for (int i = 0; i < imageWidth; i++) {
             float u = float(i) / float(imageWidth);
             float v = float(j) / float(imageHeight);
 
-            ray r(origin, lowerLeft + u * horizontal + v * vertical);
+            ray r(origin, topLeft + u * horizontal + v * vertical);
             vec3 col = color(r);
 
-            int index = (j * imageWidth * 3) + (i * 3);
+            int index = (j * imageWidth) + i;
+            index *= 3; // 3-bytes per pixel
             outputData[index] = uint8_t(col.r()*255.99);
             outputData[index + 1] = uint8_t(col.g()*255.99);
             outputData[index + 2] = uint8_t(col.b()*255.99);
