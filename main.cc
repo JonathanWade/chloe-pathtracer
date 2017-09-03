@@ -60,22 +60,29 @@ void processCommandLine(int argc, char* argv[])
 	}
 }
 
-bool HitSphere(const vec3& center, float radius, const ray& r) {
+float HitSphere(const vec3& center, float radius, const ray& r) {
     vec3 oc = r.Origin() - center;
     float a = dot(r.Direction(), r.Direction());
     float b = 2.0f * dot(oc, r.Direction());
     float c = dot(oc, oc) - radius * radius;
     float discriminant = b*b - 4*a*c;
-    return discriminant > 0;
+    if (discriminant < 0) {
+        return -1.0f;
+    } else {
+        return (-b - sqrt(discriminant)) / (2.0f * a);
+    }
 }
 
 // Ray 
 vec3 color(const ray& r) {
-    if (HitSphere(vec3(0,0,-1), 0.5, r)) {
-        return vec3(1.0f, 0.0f, 0.0f);
+    float t = HitSphere(vec3(0,0,-1), 0.5, r);
+    if(t > 0.0) {
+        vec3 norm = UnitVector(r.PointAtParameter(t) - vec3(0, 0, -1));
+        return 0.5f*vec3(norm.x()+1, norm.y()+1, norm.z()+1);
     }
+
     vec3 unit = UnitVector(r.Direction());
-    float t = 0.5f*(unit.y() + 1.0f);
+    t = 0.5f*(unit.y() + 1.0f);
     return (t)*vec3(1.0f, 1.0f, 1.0f) + (1.0f-t)*vec3(0.5f, 0.7f, 1.0f);
 }
 
