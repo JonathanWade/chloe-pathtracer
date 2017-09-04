@@ -4,15 +4,18 @@
 
 #include "sphere.h"
 #include "hitablelist.h"
+#include "camera.h"
 
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <limits>
+#include <random>
 
 // Globals //
 int imageWidth = 800;
 int imageHeight = 600;
+int samples = 5;
 
 ////////////////////////////////////////////////////////////////////////
 // Some command line parsing utilities lifted from Stack Overflow
@@ -60,6 +63,8 @@ void processCommandLine(int argc, char* argv[])
 			std::cout << "Bad output image height " << tmpHeight << ". Should be > 0" << std::endl;
 		}
 	}
+
+    // TODO: Samples per pixel
 }
 
 // Ray
@@ -83,22 +88,28 @@ int main(int argc, char* argv[])
 
     uint8_t* outputData = new uint8_t[imageWidth * imageHeight * 3];
 
-    vec3 topLeft(-2.0, 1.5, -1.0);
-    vec3 horizontal(4.0, 0.0, 0.0);
-    vec3 vertical(0.0, -3.0, 0.0);
-    vec3 origin(0.0, 0.0, 0.0);
+    std::random_device r;
+    std::mt19937 gen(r());
+    std::uniform_real_distribution<double> rd;
 
     hitableList world;
     world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f)));
     world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0, -100.5, -1), 100)));
+    camera cam;
 
     for (int j = 0; j < imageHeight; j++) {
         for (int i = 0; i < imageWidth; i++) {
-            float u = float(i) / float(imageWidth);
-            float v = float(j) / float(imageHeight);
 
-            ray r(origin, topLeft + u * horizontal + v * vertical);
-            vec3 col = color(r, &world);
+            vec3 col(0, 0, 0);
+            for(int n = 0; n < samples; n++) {
+                float u = float(i + rd(gen)) / float(imageWidth);
+                float v = float(j + rd(gen)) / float(imageHeight);
+
+                ray r = cam.GetRay(u, v);
+                //vec3 p = r.PointAtParameter(2.0);
+                col += color(r, &world);
+            }
+            col /= float(samples); // average samples
 
             int index = (j * imageWidth) + i;
             index *= 3; // 3-bytes per pixel
