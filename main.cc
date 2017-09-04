@@ -64,7 +64,16 @@ void processCommandLine(int argc, char* argv[])
 		}
 	}
 
-    // TODO: Samples per pixel
+    // Samples per pixel
+	char* clSamples = getCmdOption(argv, argv + argc, "-s");
+	if(clSamples != nullptr) {
+		int tmpSamples = std::atoi(clSamples);
+		if(tmpSamples >= 0) {
+			samples = tmpSamples;
+		} else {
+			std::cout << "Bad sample count" << tmpSamples << ". Should be >= 0" << std::endl;
+		}
+	}
 }
 
 // Ray
@@ -85,6 +94,7 @@ int main(int argc, char* argv[])
 {
     processCommandLine(argc, argv);
     std::cout << "Output image size: " << imageWidth << "x" << imageHeight << std::endl;
+    std::cout << "Samples per pixel: " << samples << std::endl;
 
     uint8_t* outputData = new uint8_t[imageWidth * imageHeight * 3];
 
