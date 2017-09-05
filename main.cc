@@ -120,6 +120,7 @@ int main(int argc, char* argv[])
     camera cam;
 
     for (int j = 0; j < imageHeight; j++) {
+        std::cout << "[" << j << "]" << std::endl;
         for (int i = 0; i < imageWidth; i++) {
 
             vec3 col(0, 0, 0);
@@ -132,6 +133,8 @@ int main(int argc, char* argv[])
                 col += color(r, &world);
             }
             col /= float(samples); // average samples
+            // Adjust to 2.0 gamma
+            col = vec3(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
 
             int index = (j * imageWidth) + i;
             index *= 3; // 3-bytes per pixel
