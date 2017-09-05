@@ -76,12 +76,24 @@ void processCommandLine(int argc, char* argv[])
 	}
 }
 
+vec3 RandomInUnitSphere() {
+    vec3 p;
+    std::random_device r;
+    std::mt19937 gen(r());
+    std::uniform_real_distribution<double> rd;
+    do {
+        p = 2.0f * vec3(rd(gen), rd(gen), rd(gen)) - vec3(1.0f, 1.0f, 1.0f);
+    } while (p.SquaredLength() >= 1.0f);
+    return p;
+}
+
 // Ray
 vec3 color(const ray& r, hitable* world) {
     hitRecord rec;
-    if(world->hit(r, 0.0, std::numeric_limits<float>::max(), rec)) {
+    if(world->hit(r, 0.001, std::numeric_limits<float>::max(), rec)) {
         // normal coloring
-        return 0.5f * vec3(rec.normal.x()+1, rec.normal.y()+1, rec.normal.z()+1);
+        vec3 target = rec.p + rec.normal + RandomInUnitSphere();
+        return 0.5f * color( ray(rec.p, target-rec.p), world);
     } else {
         vec3 unit = UnitVector(r.Direction());
         float t = 0.5f*(unit.y() + 1.0f);
