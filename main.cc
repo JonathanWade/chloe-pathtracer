@@ -7,6 +7,7 @@
 #include "camera.h"
 #include "material.h"
 #include "utility.h"
+#include "mobius.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -123,10 +124,14 @@ int main(int argc, char* argv[])
     std::uniform_real_distribution<double> rd;
 
     hitableList world;
-    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f, new lambertian(vec3(0.8f, 0.3f, 0.3f)))));
-    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.8f, 0.8f, 0.0f)))));
-    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.3f))));
-    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.8f, 0.8f), 1.0f))));
+    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f, new lambertian(vec3(0.8f, 0.3f, 0.3f)))));
+    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.8f, 0.8f, 0.0f)))));
+    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.3f))));
+    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.8f, 0.8f), 1.0f))));
+    // Ground
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.05f, 0.05f, 0.05f)))));
+    MobiusPoints* mobius = new MobiusPoints(1, 1, 5, 20, 3, 0);
+    mobius->ToWorld(world, vec3(-2.5, 0.5, -1.7));
     camera cam;
 
     for (int j = 0; j < imageHeight; j++) {
