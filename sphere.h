@@ -1,15 +1,17 @@
 #pragma once
 
 #include "hitable.h"
+#include "material.h"
 
 class sphere : public hitable {
     public:
         sphere() {}
-        sphere(vec3 center, float r) : center(center), radius(r) {};
+        sphere(vec3 center, float r, material* m) : center(center), radius(r), mat(m) {};
         virtual bool hit(const ray& r, float tMin, float tMax, hitRecord& rec) const override;
 
         vec3 center;
         float radius;
+        material* mat;
 };
 
 bool sphere::hit(const ray& r, float tMin, float tMax, hitRecord& rec) const {
@@ -24,6 +26,7 @@ bool sphere::hit(const ray& r, float tMin, float tMax, hitRecord& rec) const {
             rec.t = temp;
             rec.p = r.PointAtParameter(rec.t);
             rec.normal = (rec.p - center) / radius;
+            rec.mat = mat;
             return true;
         }
         temp = (-b + sqrt(b*b-a*c)) / a;
@@ -31,6 +34,7 @@ bool sphere::hit(const ray& r, float tMin, float tMax, hitRecord& rec) const {
             rec.t = temp;
             rec.p = r.PointAtParameter(rec.t);
             rec.normal = (rec.p - center) / radius;
+            rec.mat = mat;
             return true;
         }
     }

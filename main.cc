@@ -5,6 +5,8 @@
 #include "sphere.h"
 #include "hitablelist.h"
 #include "camera.h"
+#include "material.h"
+#include "utility.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -16,6 +18,7 @@
 int imageWidth = 800;
 int imageHeight = 600;
 int samples = 5;
+int bounces = 10;
 
 ////////////////////////////////////////////////////////////////////////
 // Some command line parsing utilities lifted from Stack Overflow
@@ -74,27 +77,32 @@ void processCommandLine(int argc, char* argv[])
 			std::cout << "Bad sample count" << tmpSamples << ". Should be >= 0" << std::endl;
 		}
 	}
-}
 
-vec3 RandomInUnitSphere() {
-    vec3 p;
-    std::random_device r;
-    std::mt19937 gen(r());
-    std::uniform_real_distribution<double> rd;
-    do {
-        p = 2.0f * vec3(rd(gen), rd(gen), rd(gen)) - vec3(1.0f, 1.0f, 1.0f);
-    } while (p.SquaredLength() >= 1.0f);
-    return p;
+    // Samples per pixel
+	char* clBounces = getCmdOption(argv, argv + argc, "-b");
+	if(clBounces != nullptr) {
+		int tmpBounces = std::atoi(clBounces);
+		if(tmpBounces >= 0) {
+			bounces = tmpBounces;
+		} else {
+			std::cout << "Bad bounce count" << tmpBounces << ". Should be >= 0" << std::endl;
+		}
+	}
 }
 
 // Ray
-vec3 color(const ray& r, hitable* world) {
+vec3 color(const ray& r, hitable* world, int depth) {
     hitRecord rec;
     if(world->hit(r, 0.001, std::numeric_limits<float>::max(), rec)) {
-        // normal coloring
-        vec3 target = rec.p + rec.normal + RandomInUnitSphere();
-        return 0.5f * color( ray(rec.p, target-rec.p), world);
+        ray scattered;
+        vec3 attenuation;
+        if(depth < bounces && rec.mat->scatter(r, rec, attenuation, scattered)) {
+            return attenuation * color(scattered, world, depth+1);
+        } else{
+            return vec3(0,0,0);
+        }
     } else {
+        // Sky
         vec3 unit = UnitVector(r.Direction());
         float t = 0.5f*(unit.y() + 1.0f);
         return (1.0f-t)*vec3(1.0f, 1.0f, 1.0f) + (t)*vec3(0.5f, 0.7f, 1.0f);
@@ -115,12 +123,14 @@ int main(int argc, char* argv[])
     std::uniform_real_distribution<double> rd;
 
     hitableList world;
-    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f)));
-    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0, -100.5, -1), 100)));
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f, new lambertian(vec3(0.8f, 0.3f, 0.3f)))));
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.8f, 0.8f, 0.0f)))));
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.3f))));
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.8f, 0.8f), 1.0f))));
     camera cam;
 
     for (int j = 0; j < imageHeight; j++) {
-        std::cout << "[" << j << "]" << std::endl;
+        std::cout << "[" << j << "]";
         for (int i = 0; i < imageWidth; i++) {
 
             vec3 col(0, 0, 0);
@@ -130,7 +140,7 @@ int main(int argc, char* argv[])
 
                 ray r = cam.GetRay(u, v);
                 //vec3 p = r.PointAtParameter(2.0);
-                col += color(r, &world);
+                col += color(r, &world, 0);
             }
             col /= float(samples); // average samples
             // Adjust to 2.0 gamma
