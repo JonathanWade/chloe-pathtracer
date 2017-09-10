@@ -1,7 +1,11 @@
 #pragma once
 
+#include <random>
 #include "utility.h"
 #include "hitable.h"
+
+extern std::mt19937 gen;
+extern std::uniform_real_distribution<double> rd;
 
 class material {
     public:
@@ -43,4 +47,46 @@ class metal : public material {
 
         vec3 albedo;
         float fuzz;
+};
+
+// Dielectric (refactive) //////////////////////////////
+class dielectric : public material {
+public:
+    dielectric(float ri) : refractiveIndex(ri) {}
+
+    virtual bool scatter(const ray& r_in, const hitRecord& rec, vec3& attenuation, ray& scattered) const {
+        vec3 outwardNormal;
+        vec3 reflected = Reflect(r_in.Direction(), rec.normal);
+        float niOverNt;
+        attenuation = vec3(1.0, 1.0, 1.0f);
+        vec3 refracted;
+        float reflect_prob;
+        float cosine;
+
+        if(dot(r_in.Direction(), rec.normal) > 0) {
+            outwardNormal = -rec.normal;
+            niOverNt = refractiveIndex;
+            cosine = refractiveIndex * dot(r_in.Direction(), rec.normal) / r_in.Direction().Length();
+        } else {
+            outwardNormal = rec.normal;
+            niOverNt = 1.0 / refractiveIndex;
+            cosine = -dot(r_in.Direction(), rec.normal) / r_in.Direction().Length();
+        }
+
+        if(Refract(r_in.Direction(), outwardNormal, niOverNt, refracted)) {
+            reflect_prob = schlick(cosine, refractiveIndex);
+        } else {
+            reflect_prob = 1.0f;
+        }
+
+        if(rd(gen) < reflect_prob) {
+            scattered = ray(rec.p, reflected);
+        } else {
+            scattered = ray(rec.p, refracted);
+        }
+
+        return true;
+    }
+
+    float refractiveIndex;
 };

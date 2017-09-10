@@ -2,6 +2,9 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+// This turns of double -> float lack of precision
+#pragma warning( disable : 4244)
+
 #include "sphere.h"
 #include "hitablelist.h"
 #include "camera.h"
@@ -20,6 +23,10 @@ int imageWidth = 800;
 int imageHeight = 600;
 int samples = 5;
 int bounces = 10;
+
+std::random_device r;
+std::mt19937 gen(r());
+std::uniform_real_distribution<double> rd;
 
 ////////////////////////////////////////////////////////////////////////
 // Some command line parsing utilities lifted from Stack Overflow
@@ -94,7 +101,7 @@ void processCommandLine(int argc, char* argv[])
 // Ray
 vec3 color(const ray& r, hitable* world, int depth) {
     hitRecord rec;
-    if(world->hit(r, 0.001, std::numeric_limits<float>::max(), rec)) {
+    if(world->hit(r, 0.001f, std::numeric_limits<float>::max(), rec)) {
         ray scattered;
         vec3 attenuation;
         if(depth < bounces && rec.mat->scatter(r, rec, attenuation, scattered)) {
@@ -119,19 +126,20 @@ int main(int argc, char* argv[])
 
     uint8_t* outputData = new uint8_t[imageWidth * imageHeight * 3];
 
-    std::random_device r;
-    std::mt19937 gen(r());
-    std::uniform_real_distribution<double> rd;
 
     hitableList world;
-    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f, new lambertian(vec3(0.8f, 0.3f, 0.3f)))));
-    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.8f, 0.8f, 0.0f)))));
-    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.3f))));
-    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.8f, 0.8f), 1.0f))));
-    // Ground
+    // Ground!
     world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.05f, 0.05f, 0.05f)))));
-    MobiusPoints* mobius = new MobiusPoints(1, 1, 5, 20, 3, 0);
-    mobius->ToWorld(world, vec3(-2.5, 0.5, -1.7));
+    // Three spheres
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f, new lambertian(vec3(0.8f, 0.3f, 0.3f)))));
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.1f))));
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), 0.5f, new dielectric(1.5f) )));
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), -0.45f, new dielectric(1.5f) )));
+
+    // Mobius World
+    //MobiusPoints* mobius = new MobiusPoints(1, 1, 5, 20, 3, 0);
+    //mobius->ToWorld(world, vec3(-2.5, 0.5, -1.7));
+
     camera cam;
 
     for (int j = 0; j < imageHeight; j++) {
