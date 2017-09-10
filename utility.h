@@ -3,6 +3,8 @@
 #include <random>
 #include "vec3.h"
 
+const double pi = 3.1415926535897;
+
 inline vec3 Reflect(const vec3& v, const vec3& n) {
     return v - 2 * dot(v, n) * n;
 }

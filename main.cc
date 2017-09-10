@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
     //MobiusPoints* mobius = new MobiusPoints(1, 1, 5, 20, 3, 0);
     //mobius->ToWorld(world, vec3(-2.5, 0.5, -1.7));
 
-    camera cam;
+    camera cam(vec3(-2, 2, 1), vec3(0,0,-1), vec3(0,1,0), 30.0f, float(imageWidth)/float(imageHeight));
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();

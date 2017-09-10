@@ -1,9 +1,8 @@
 #pragma once
 #include "hitablelist.h"
+#include "utility.h"
 #include "vec3.h"
 #include <cmath>
-
-const double pi = 3.1415926535897;
 
 // Code mutated from http://www.devenezia.com/downloads/mob/
 
