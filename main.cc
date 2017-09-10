@@ -134,7 +134,6 @@ int main(int argc, char* argv[])
     world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f, new lambertian(vec3(0.8f, 0.3f, 0.3f)))));
     world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.1f))));
     world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), 0.5f, new dielectric(1.5f) )));
-    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), -0.45f, new dielectric(1.5f) )));
 
     // Mobius World
     //MobiusPoints* mobius = new MobiusPoints(1, 1, 5, 20, 3, 0);
