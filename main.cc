@@ -17,6 +17,7 @@
 #include <iostream>
 #include <limits>
 #include <random>
+#include <chrono>
 
 // Globals //
 int imageWidth = 800;
@@ -141,6 +142,9 @@ int main(int argc, char* argv[])
 
     camera cam;
 
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
+
     for (int j = 0; j < imageHeight; j++) {
         std::cout << "[" << j << "]";
         for (int i = 0; i < imageWidth; i++) {
@@ -165,7 +169,9 @@ int main(int argc, char* argv[])
             outputData[index + 2] = uint8_t(col.b()*255.99);
         }
     }
-
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed = end-start;
+    std::cout << "Elapsed render time: " << elapsed.count() << "s" << std::endl;
 
     std::cout << "Writing image to disk" << std::endl;
     int saveImageResult = stbi_write_png(
