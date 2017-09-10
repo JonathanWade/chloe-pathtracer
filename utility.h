@@ -4,6 +4,8 @@
 #include "vec3.h"
 
 const double pi = 3.1415926535897;
+extern std::mt19937 gen;
+extern std::uniform_real_distribution<double> rd;
 
 inline vec3 Reflect(const vec3& v, const vec3& n) {
     return v - 2 * dot(v, n) * n;
@@ -11,12 +13,17 @@ inline vec3 Reflect(const vec3& v, const vec3& n) {
 
 vec3 RandomInUnitSphere() {
     vec3 p;
-    std::random_device r;
-    std::mt19937 gen(r());
-    std::uniform_real_distribution<double> rd;
     do {
         p = 2.0f * vec3(rd(gen), rd(gen), rd(gen)) - vec3(1.0f, 1.0f, 1.0f);
     } while (p.SquaredLength() >= 1.0f);
+    return p;
+}
+
+vec3 RandomInUnitDisk() {
+    vec3 p;
+    do {
+        p = 2.0f * vec3(rd(gen), rd(gen), 0.0f) - vec3(1.0f, 1.0f, 0.0f);
+    } while (dot(p,p) >= 1.0f);
     return p;
 }
 

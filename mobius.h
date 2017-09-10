@@ -156,7 +156,7 @@ void MobiusPoints::ToWorld(hitableList& world, const vec3 offset) {
     for(int i = 0; i < NS; i++) {
         float u = float(i) / float(NS);
         float fuzz = abs(sin(u * pi));
-        
+
         for(int j = 0; j < 5; j++)
         {
 			vec3 color(u, 1.0f - u, j / 4.0);
