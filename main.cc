@@ -133,48 +133,48 @@ int main(int argc, char* argv[])
     world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.05f, 0.05f, 0.05f)))));
     // Three spheres
     // TODO: move this into a world gen
-    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f, new lambertian(vec3(0.8f, 0.3f, 0.3f)))));
-    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.1f))));
-    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), 0.5f, new dielectric(1.5f) )));
+    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f, new lambertian(vec3(0.8f, 0.3f, 0.3f)))));
+    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.1f))));
+    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), 0.5f, new dielectric(1.5f) )));
 
     //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-2, 0, -3), 0.5f, new dielectric(1.5f) )));
     //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(2, 0, 1), 0.5f, new dielectric(1.5f) )));
 
     // Random height color grid
     // TODO: move this into a world gen
-    //vec3 maxX(-2.0f, 0, 0);
-    //vec3 maxZ(0, 0, -3.0f);
-    //float x = 0.0f;
-    //float y = 0.0f;
+    vec3 maxX(-2.0f, 0, 0);
+    vec3 maxZ(0, 0, -3.0f);
+    float x = 0.0f;
+    float y = 0.0f;
 
-    //for(int i = 0; i < 12; i++) {
-        //for (int j = 0; j < 12; j++) {
-            //vec3 loc(0.0f, rd(gen) * 2.0f, 0.0f);
-            //loc += maxX;
-            //loc += maxZ;
+    for(int i = 0; i < 12; i++) {
+        for (int j = 0; j < 12; j++) {
+            vec3 loc(0.0f, rd(gen) * 2.0f, 0.0f);
+            loc += maxX;
+            loc += maxZ;
 
-            //world.list.push_back(std::unique_ptr<hitable>(new sphere(loc, 0.17f, new metal(vec3(x, (1.0f-x), y) * 0.7f, 0.2f))));
+            world.list.push_back(std::unique_ptr<hitable>(new sphere(loc, 0.17f, new lambertian(vec3(x, (1.0f-x), y) * 0.7f))));
 
-            //x += (1.0f/12.0f);
-            //maxX += vec3(1.0f/12.0f * 4.0f, 0.0f, 0.0f);
-        //}
-        //y += (1.0f/12.0f);
-        //maxZ += vec3(0.0f, 0.0f, 1.0f/12.0f * 4.0f);
-        //x = 0.0f;
-        //maxX = vec3(-2.0f, 0, 0);
-    //}
-
+            x += (1.0f/12.0f);
+            maxX += vec3(1.0f/12.0f * 4.0f, 0.0f, 0.0f);
+        }
+        y += (1.0f/12.0f);
+        maxZ += vec3(0.0f, 0.0f, 1.0f/12.0f * 4.0f);
+        x = 0.0f;
+        maxX = vec3(-2.0f, 0, 0);
+    }
 
     // Mobius World
     //MobiusPoints* mobius = new MobiusPoints(1, 1, 5, 20, 3, 0);
     //mobius->ToWorld(world, vec3(-2.5, 0.5, -1.7));
 
-    vec3 lookfrom(3,3,2);
+    //vec3 lookfrom(3,3,2);
+    vec3 lookfrom(-2.0f, 2.5f, -1.0f);
     vec3 lookat(0,0,-1);
     float distToFocus = (lookfrom-lookat).Length();
-    float aperture = 2.0f;
+    float aperture = 0.1f;
 
-    camera cam(lookfrom, lookat, vec3(0,1,0), 20.0f,
+    camera cam(lookfrom, lookat, vec3(0,1,0), 90.0f,
             float(imageWidth)/float(imageHeight),
             aperture, distToFocus);
 
