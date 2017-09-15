@@ -12,6 +12,8 @@
 #include "utility.h"
 #include "mobius.h"
 
+#include "threadpool.h"
+
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
