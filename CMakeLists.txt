@@ -3,6 +3,6 @@ project (Pathtracer CXX)
 
 include_directories("$(PROJECT_SOURCE_DIR)/includes")
 
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 14)
 add_executable(pathtracer main.cc)
 
