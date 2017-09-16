@@ -121,7 +121,7 @@ vec3 color(const ray& r, hitable* world, int depth) {
 }
 
 void SingleSampleFrame(hitableList* const world, camera* const cam, ThreadSafeQueue<vector<vec3> >& frameCollector) {
-    vector<vec3> thisFrame(imageWidth * imageHeight);
+    vector<vec3> thisFrame;
 
     for (int j = 0; j < imageHeight; j++) {
         for (int i = 0; i < imageWidth; i++) {
@@ -201,7 +201,7 @@ int main(int argc, char* argv[])
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    vector<vec3> finalFrame(imageWidth*imageHeight);
+    vector<vec3> finalFrame;
     for(int i = 0; i < (imageWidth*imageHeight); i++) {
         finalFrame.push_back(vec3(0.0f, 0.0f, 0.0f));
     }
@@ -221,8 +221,8 @@ int main(int argc, char* argv[])
     vector<vec3> singleFrame;
     while(sampledFrames < samples) {
         if(imageSamples.waitPop(singleFrame)) {
-            if (singleFrame.size() == imageWidth*imageHeight) continue;
-            if (finalFrame.size() == imageWidth*imageHeight) continue;
+            if (singleFrame.size() != imageWidth*imageHeight) continue;
+            if (finalFrame.size() != imageWidth*imageHeight) continue;
 
             for(int p = 0; p < (imageWidth*imageHeight); p++) {
                 finalFrame[p] += singleFrame[p];
@@ -242,9 +242,9 @@ int main(int argc, char* argv[])
     // Turn into a PNG buffer
     for(int p = 0; p < (imageWidth*imageHeight); p++) {
         int offset = p * 3; // 3-bytes pp
-        outputData[offset] = uint8_t(finalFrame[offset].r()*255.99);
-        outputData[offset + 1] = uint8_t(finalFrame[offset].g()*255.99);
-        outputData[offset + 2] = uint8_t(finalFrame[offset].b()*255.99);
+        outputData[offset] = uint8_t(finalFrame[p].r()*255.99);
+        outputData[offset + 1] = uint8_t(finalFrame[p].g()*255.99);
+        outputData[offset + 2] = uint8_t(finalFrame[p].b()*255.99);
     }
 
     end = std::chrono::system_clock::now();
