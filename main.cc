@@ -120,6 +120,24 @@ vec3 color(const ray& r, hitable* world, int depth) {
     }
 }
 
+void SingleSampleFrame(hitableList* const world, camera* const cam, ThreadSafeQueue<vector<vec3> >& frameCollector) {
+    vector<vec3> thisFrame(imageWidth * imageHeight);
+
+    for (int j = 0; j < imageHeight; j++) {
+        for (int i = 0; i < imageWidth; i++) {
+
+            float u = float(i + rd(gen)) / float(imageWidth);
+            float v = float(j + rd(gen)) / float(imageHeight);
+
+            ray r = cam->GetRay(u, v);
+            thisFrame.push_back( color(r, world, 0) );
+        }
+    }
+
+    frameCollector.push(thisFrame);
+
+}
+
 // Main ////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[])
 {
@@ -135,36 +153,36 @@ int main(int argc, char* argv[])
     world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0, -100.5, -1), 100, new lambertian(vec3(0.05f, 0.05f, 0.05f)))));
     // Three spheres
     // TODO: move this into a world gen
-    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f, new lambertian(vec3(0.8f, 0.3f, 0.3f)))));
-    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.1f))));
-    //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), 0.5f, new dielectric(1.5f) )));
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(0,0,-1), 0.5f, new lambertian(vec3(0.8f, 0.3f, 0.3f)))));
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(1, 0, -1), 0.5f, new metal(vec3(0.8f, 0.6f, 0.2f), 0.1f))));
+    world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-1, 0, -1), 0.5f, new dielectric(1.5f) )));
 
     //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(-2, 0, -3), 0.5f, new dielectric(1.5f) )));
     //world.list.push_back(std::unique_ptr<hitable>(new sphere(vec3(2, 0, 1), 0.5f, new dielectric(1.5f) )));
 
     // Random height color grid
     // TODO: move this into a world gen
-    vec3 maxX(-2.0f, 0, 0);
-    vec3 maxZ(0, 0, -3.0f);
-    float x = 0.0f;
-    float y = 0.0f;
+    //vec3 maxX(-2.0f, 0, 0);
+    //vec3 maxZ(0, 0, -3.0f);
+    //float x = 0.0f;
+    //float y = 0.0f;
 
-    for(int i = 0; i < 12; i++) {
-        for (int j = 0; j < 12; j++) {
-            vec3 loc(0.0f, rd(gen) * 2.0f, 0.0f);
-            loc += maxX;
-            loc += maxZ;
+    //for(int i = 0; i < 12; i++) {
+        //for (int j = 0; j < 12; j++) {
+            //vec3 loc(0.0f, rd(gen) * 2.0f, 0.0f);
+            //loc += maxX;
+            //loc += maxZ;
 
-            world.list.push_back(std::unique_ptr<hitable>(new sphere(loc, 0.17f, new lambertian(vec3(x, (1.0f-x), y) * 0.7f))));
+            //world.list.push_back(std::unique_ptr<hitable>(new sphere(loc, 0.17f, new lambertian(vec3(x, (1.0f-x), y) * 0.7f))));
 
-            x += (1.0f/12.0f);
-            maxX += vec3(1.0f/12.0f * 4.0f, 0.0f, 0.0f);
-        }
-        y += (1.0f/12.0f);
-        maxZ += vec3(0.0f, 0.0f, 1.0f/12.0f * 4.0f);
-        x = 0.0f;
-        maxX = vec3(-2.0f, 0, 0);
-    }
+            //x += (1.0f/12.0f);
+            //maxX += vec3(1.0f/12.0f * 4.0f, 0.0f, 0.0f);
+        //}
+        //y += (1.0f/12.0f);
+        //maxZ += vec3(0.0f, 0.0f, 1.0f/12.0f * 4.0f);
+        //x = 0.0f;
+        //maxX = vec3(-2.0f, 0, 0);
+    //}
 
     // Mobius World
     //MobiusPoints* mobius = new MobiusPoints(1, 1, 5, 20, 3, 0);
@@ -183,30 +201,52 @@ int main(int argc, char* argv[])
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
 
-    for (int j = 0; j < imageHeight; j++) {
-        std::cout << "[" << j << "]";
-        for (int i = 0; i < imageWidth; i++) {
+    vector<vec3> finalFrame(imageWidth*imageHeight);
+    for(int i = 0; i < (imageWidth*imageHeight); i++) {
+        finalFrame.push_back(vec3(0.0f, 0.0f, 0.0f));
+    }
 
-            vec3 col(0, 0, 0);
-            for(int n = 0; n < samples; n++) {
-                float u = float(i + rd(gen)) / float(imageWidth);
-                float v = float(j + rd(gen)) / float(imageHeight);
+    ThreadSafeQueue< vector<vec3> > imageSamples;
 
-                ray r = cam.GetRay(u, v);
-                //vec3 p = r.PointAtParameter(2.0);
-                col += color(r, &world, 0);
+    for(int n = 0; n < samples; n++) {
+        auto taskFuture = DefaultThreadPool::submitJob([](hitableList* const world, camera* const cam, ThreadSafeQueue<vector<vec3> >& frameCollector) {
+                SingleSampleFrame(world, cam, frameCollector);
+
+                }, &world, &cam, std::ref(imageSamples));
+    }
+
+
+    // collapse all images as they come in
+    int sampledFrames = 0;
+    vector<vec3> singleFrame;
+    while(sampledFrames < samples) {
+        if(imageSamples.waitPop(singleFrame)) {
+            if (singleFrame.size() == imageWidth*imageHeight) continue;
+            if (finalFrame.size() == imageWidth*imageHeight) continue;
+
+            for(int p = 0; p < (imageWidth*imageHeight); p++) {
+                finalFrame[p] += singleFrame[p];
             }
-            col /= float(samples); // average samples
-            // Adjust to 2.0 gamma
-            col = vec3(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
 
-            int index = (j * imageWidth) + i;
-            index *= 3; // 3-bytes per pixel
-            outputData[index] = uint8_t(col.r()*255.99);
-            outputData[index + 1] = uint8_t(col.g()*255.99);
-            outputData[index + 2] = uint8_t(col.b()*255.99);
+            sampledFrames++;
         }
     }
+
+    // divide and gamma correct final image in unit HDR
+    for(auto& pixel : finalFrame) {
+        pixel /= static_cast<float>(samples);
+        // Adjust to 2.0 gamma
+        pixel = vec3(sqrt(pixel[0]), sqrt(pixel[1]), sqrt(pixel[2]));
+    }
+
+    // Turn into a PNG buffer
+    for(int p = 0; p < (imageWidth*imageHeight); p++) {
+        int offset = p * 3; // 3-bytes pp
+        outputData[offset] = uint8_t(finalFrame[offset].r()*255.99);
+        outputData[offset + 1] = uint8_t(finalFrame[offset].g()*255.99);
+        outputData[offset + 2] = uint8_t(finalFrame[offset].b()*255.99);
+    }
+
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed = end-start;
     std::cout << std::endl << "Elapsed render time: " << elapsed.count() << "s" << std::endl;

@@ -40,7 +40,7 @@ public:
 
     void push(T value) {
         std::lock_guard<std::mutex> lock{m_mutex};
-        m_queue.push_back(value);
+        m_queue.push(value);
         m_condition.notify_one();
     }
 
