@@ -80,6 +80,7 @@ public:
         m_workQueue{},
         m_threads{}
     {
+        std::cout << "Num Threads: " << numThreads << std::endl;
         try {
             for(std::uint32_t i = 0u; i < numThreads; i++) {
                 m_threads.emplace_back(&ThreadPool::worker, this);

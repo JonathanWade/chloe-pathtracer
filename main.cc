@@ -207,15 +207,16 @@ int main(int argc, char* argv[])
     }
 
     ThreadSafeQueue< vector<vec3> > imageSamples;
+    std::vector<ThreadPool::TaskFuture<void> > sampleTasks;
 
     for(int n = 0; n < samples; n++) {
-        auto taskFuture = DefaultThreadPool::submitJob([](hitableList* const world, camera* const cam, ThreadSafeQueue<vector<vec3> >& frameCollector) {
+        sampleTasks.push_back(DefaultThreadPool::submitJob([](hitableList* const world, camera* const cam, ThreadSafeQueue<vector<vec3> >& frameCollector) {
                 SingleSampleFrame(world, cam, frameCollector);
 
-                }, &world, &cam, std::ref(imageSamples));
+                }, &world, &cam, std::ref(imageSamples)));
     }
 
-
+    std::cout << "Samples submitted. Started collection..." << std::endl;
     // collapse all images as they come in
     int sampledFrames = 0;
     vector<vec3> singleFrame;
@@ -230,6 +231,11 @@ int main(int argc, char* argv[])
 
             sampledFrames++;
         }
+    }
+
+    // Join threads
+    for(auto& t : sampleTasks) {
+        t.get();
     }
 
     // divide and gamma correct final image in unit HDR
